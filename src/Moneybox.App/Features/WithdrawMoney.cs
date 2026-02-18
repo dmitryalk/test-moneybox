@@ -19,19 +19,12 @@ namespace Moneybox.App.Features
         {
             var from = this.accountRepository.GetAccountById(fromAccountId);
 
-            var fromBalance = from.Balance - amount;
-            if (fromBalance < 0m)
-            {
-                throw new InvalidOperationException("Insufficient funds to make withdrawal");
-            }
+            from.Withdraw(amount);            
 
-            if (fromBalance < 500m)
+            if (from.Balance < Account.LowFunds)
             {
                 this.notificationService.NotifyFundsLow(from.User.Email);
-            }                                
-
-            from.Balance = from.Balance - amount;
-            from.Withdrawn = from.Withdrawn - amount;
+            }   
 
             this.accountRepository.Update(from);
         }
