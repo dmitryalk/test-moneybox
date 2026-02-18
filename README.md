@@ -1,6 +1,7 @@
 # Moneybox Application
 
-A .NET 8 application demonstrating domain-driven design principles and Test-Driven Development (TDD)
+A .NET 8 application demonstrating domain-driven design principles and Test-Driven Development (TDD).
+
 Github copilot was used to improve productivity:
 - to generate Readme.md
 - to stub initial unit tests
