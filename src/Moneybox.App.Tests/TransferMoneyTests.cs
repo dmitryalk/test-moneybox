@@ -2,6 +2,7 @@
 using Moneybox.App.Domain.Services;
 using Moneybox.App.Features;
 using Moq;
+using System.Security.Principal;
 
 namespace Moneybox.App.Tests;
 
@@ -95,6 +96,8 @@ public sealed class TransferMoneyTests
             _transferMoney.Execute(fromAccountId, toAccountId, amount));
 
         Assert.AreEqual("Insufficient funds to make transfer", exception.Message);
+        _mockAccountRepository.Verify(x => x.Update(fromAccount), Times.Never);
+        _mockAccountRepository.Verify(x => x.Update(toAccount), Times.Never);
     }
 
     [TestMethod]
@@ -131,6 +134,8 @@ public sealed class TransferMoneyTests
 
         // Assert
         _mockNotificationService.Verify(x => x.NotifyFundsLow("from@test.com"), Times.Once);
+        _mockAccountRepository.Verify(x => x.Update(fromAccount), Times.Once);
+        _mockAccountRepository.Verify(x => x.Update(toAccount), Times.Once);
 
         Assert.AreEqual(400m, fromAccount.Balance);
         Assert.AreEqual(-600m, fromAccount.Withdrawn);
@@ -172,6 +177,8 @@ public sealed class TransferMoneyTests
 
         // Assert
         _mockNotificationService.Verify(x => x.NotifyFundsLow(It.IsAny<string>()), Times.Never);
+        _mockAccountRepository.Verify(x => x.Update(fromAccount), Times.Once);
+        _mockAccountRepository.Verify(x => x.Update(toAccount), Times.Once);
     }
 
     [TestMethod]
@@ -207,6 +214,9 @@ public sealed class TransferMoneyTests
         var exception = Assert.Throws<InvalidOperationException>(() =>
             _transferMoney.Execute(fromAccountId, toAccountId, amount));
         Assert.AreEqual("Account pay in limit reached", exception.Message);
+
+        _mockAccountRepository.Verify(x => x.Update(fromAccount), Times.Never);
+        _mockAccountRepository.Verify(x => x.Update(toAccount), Times.Never);
     }
 
     [TestMethod]
@@ -243,6 +253,9 @@ public sealed class TransferMoneyTests
 
         // Assert
         _mockNotificationService.Verify(x => x.NotifyApproachingPayInLimit("to@test.com"), Times.Once);
+        _mockAccountRepository.Verify(x => x.Update(fromAccount), Times.Once);
+        _mockAccountRepository.Verify(x => x.Update(toAccount), Times.Once);
+
         Assert.AreEqual(4900m, fromAccount.Balance);
         Assert.AreEqual(-100m, fromAccount.Withdrawn);
         Assert.AreEqual(1100m, toAccount.Balance);
@@ -283,6 +296,8 @@ public sealed class TransferMoneyTests
 
         // Assert
         _mockNotificationService.Verify(x => x.NotifyApproachingPayInLimit(It.IsAny<string>()), Times.Never);
+        _mockAccountRepository.Verify(x => x.Update(fromAccount), Times.Once);
+        _mockAccountRepository.Verify(x => x.Update(toAccount), Times.Once);
     }
 
     [TestMethod]
@@ -322,5 +337,8 @@ public sealed class TransferMoneyTests
         Assert.AreEqual(500m, toAccount.Balance);
         _mockNotificationService.Verify(x => x.NotifyFundsLow(It.IsAny<string>()), Times.Never);
         _mockNotificationService.Verify(x => x.NotifyApproachingPayInLimit(It.IsAny<string>()), Times.Never);
+
+        _mockAccountRepository.Verify(x => x.Update(fromAccount), Times.Once);
+        _mockAccountRepository.Verify(x => x.Update(toAccount), Times.Once);
     }
 }
